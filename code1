@@ -1,0 +1,55 @@
+brew install miniforge
+conda --version
+conda create -n mirna_pipeline python=3.10
+
+conda install -c bioconda fastqc
+conda install -c bioconda bbmap
+conda install -c bioconda bowtie
+conda install -c bioconda samtools
+conda install -c bioconda multiqc
+
+conda activate mirna_pipeline
+
+FastQC v0.12.1
+samtools 1.21
+bowtie-align-s version 1.3.1
+BBTools version 39.25
+multiqc, version 1.28
+
+gunzip /Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/lane1/*.fastq.gz
+gunzip /Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/lane2/*.fastq.gz
+
+INPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/lane2"
+OUTPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis"
+HUMANMIRBASEINDEX="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis"
+QCREPORT="$INPUTDIR/QCReports"
+
+$INPUTDIR/QCReports 
+mkdir $OUTPUTDIR/maturemiRNAcounts
+
+
+for file in "$INPUTDIR"/*.fastq; do   
+    echo "Running FastQC on: $file"
+    fastqc -o "$QCREPORT" -t 16 "$file"
+done
+
+
+cd /Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/lane2/QCReports
+multiqc . -o ./MultiQC_Report 
+
+INPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/lane2"
+OUTPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis/trimmed_reads"
+
+mkdir -p "$OUTPUTDIR"
+
+for file in "$INPUTDIR"/*.fastq; do
+    i=$(basename "$file" .fastq)
+
+    echo "Trimming adapter from $i..."
+
+    bbduk.sh -Xmx27g \
+        in="$file" \
+        out="$OUTPUTDIR/${i}-Trimmed.fastq" \
+        literal=TGGAATTCTCGGGTGCCAAGGAACTCCAGTCAC \
+        ktrim=r k=21 mink=11 hdist=2
+done
