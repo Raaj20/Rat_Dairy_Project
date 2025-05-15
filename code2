@@ -1,0 +1,41 @@
+#!/bin/bash
+
+OUTPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis/trimmed_reads"
+INDEX="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/database/mature"
+COUNTDIR="$OUTPUTDIR/maturemiRNAcounts"
+
+mkdir -p "$COUNTDIR"
+
+for file in "$OUTPUTDIR"/*-Trimmed.fastq; do
+    i=$(basename "$file" -Trimmed.fastq)
+
+    echo "Running Bowtie on $i..."
+
+
+    bowtie -n 0 -l 32 --norc --best --strata -m 1 --threads 16 \
+        "$INDEX" \
+        -q "$file" \
+        --un "$OUTPUTDIR/${i}-unaligned.fastq" \
+        -S "$OUTPUTDIR/${i}.sam" \
+        2> "$OUTPUTDIR/${i}.log"
+
+    echo "Converting SAM to BAM and indexing..."
+
+
+    samtools sort "$OUTPUTDIR/${i}.sam" -o "$OUTPUTDIR/${i}.bam"
+
+
+    samtools index "$OUTPUTDIR/${i}.bam"
+
+
+    rm "$OUTPUTDIR/${i}.sam"
+
+    echo "Counting mapped reads for $i..."
+
+
+    samtools idxstats "$OUTPUTDIR/${i}.bam" | cut -f1,3 | \
+        sed "1s/^/miRNA\t${i}-miRNAcount\n/" > "$COUNTDIR/${i}-counts.txt"
+
+    echo "Done with $i."
+done
+
