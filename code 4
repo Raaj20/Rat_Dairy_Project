@@ -1,0 +1,58 @@
+samples <- c(
+  "LSM", "ZSM", "LW", "ZSM", "ZW", "LC", "LC", "ZC", "LW", "ZSM", "ZC", "LC", "LW", "ZSM", "LW", "ZW",
+  "LSM", "ZSM", "LW", "ZC", "LSM", "ZSM", "LC", "ZC", "LSM", "ZW", "LW", "ZW", "LSM", "ZSM", "LSM", "ZW",
+  "LSM", "ZC", "LC", "ZW", "LW", "ZC", "ZW", "LSM", "LC", "ZW", "ZSM", "LC", "LW", "ZC", "LC", "ZC"
+)
+library(DESeq2)
+
+count_data_raw <- read.csv("filtered_mirna_counts.csv", row.names = 1, check.names = FALSE)
+
+# Ensure samples vector is defined and matches columns of count_data_raw
+stopifnot(length(samples) == ncol(count_data_raw))
+
+sample_info <- data.frame(
+  condition = factor(samples, levels = c("ZC", "ZW", "ZSM", "LC", "LW", "LSM"))
+)
+rownames(sample_info) <- colnames(count_data_raw)
+
+print(head(sample_info))
+table(sample_info$condition)
+
+count_matrix <- as.matrix(count_data_raw)
+
+# Create DESeq2 dataset
+dds <- DESeqDataSetFromMatrix(
+  countData = count_matrix,
+  colData = sample_info,
+  design = ~ condition
+)
+
+# Pre-filter and normalize
+dds <- estimateSizeFactors(dds)
+idx <- rowSums(counts(dds, normalized=TRUE) >= 5) >= 3
+dds <- dds[idx, ]
+
+# Run DESeq analysis
+dds <- DESeq(dds)
+
+
+normalized_counts <- counts(dds, normalized = TRUE)
+
+
+res_ZSM_vs_ZC <- results(dds, contrast = c("condition", "ZSM", "ZC"))
+res_ZW_vs_ZC  <- results(dds, contrast = c("condition", "ZW", "ZC"))
+res_LSM_vs_LC <- results(dds, contrast = c("condition", "LSM", "LC"))
+res_LW_vs_LC  <- results(dds, contrast = c("condition", "LW", "LC"))
+
+#1
+sig_ZSM_vs_ZC <- res_ZSM_vs_ZC[which(res_ZSM_vs_ZC$padj < 0.05), ]
+head(sig_ZSM_vs_ZC)
+#2
+sig_ZW_vs_ZC <- res_ZW_vs_ZC[which(res_ZW_vs_ZC$pvalue < 0.05), ]
+head(sig_ZW_vs_ZC)
+#3
+sig_LSM_vs_LC <- res_LSM_vs_LC[which(res_LSM_vs_LC$pvalue < 0.05), ]
+head(sig_LSM_vs_LC)
+#4
+sig_LW_vs_LC <- res_LW_vs_LC[which(res_LW_vs_LC$pvalue < 0.05), ]
+head(sig_LW_vs_LC)
