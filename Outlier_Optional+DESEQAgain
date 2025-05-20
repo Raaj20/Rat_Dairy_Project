@@ -1,0 +1,54 @@
+# Install if not already installed
+install.packages("isotree")
+library(isotree)
+library(DESeq2)
+
+
+# Transpose normalized counts so samples are rows
+sample_matrix <- t(normalized_counts)
+
+# Run Isolation Forest
+set.seed(42)  # for reproducibility
+iso_model <- isolation.forest(sample_matrix, ntrees = 100)
+
+# Predict outlier scores
+outlier_scores <- predict(iso_model, sample_matrix, type = "score")
+
+# Define outliers as top 5% highest scores
+threshold <- quantile(outlier_scores, 0.95)
+outlier_samples <- which(outlier_scores >= threshold)
+
+# Get names of outlier samples
+outlier_sample_names <- rownames(sample_matrix)[outlier_samples]
+print("Outlier samples detected:")
+print(outlier_sample_names)
+
+
+keep_samples <- colnames(dds)[!colnames(dds) %in% outlier_sample_names]
+
+# Subset DESeq2 object
+dds_no_outliers <- dds[, keep_samples]
+dds_no_outliers <- DESeq(dds_no_outliers)
+
+# (Recalculate normalized counts if needed)
+normalized_counts_no_outliers <- counts(dds_no_outliers, normalized = TRUE)
+
+res_ZSM_vs_ZC <- results(dds_no_outliers, contrast = c("condition", "ZSM", "ZC"))
+res_ZW_vs_ZC  <- results(dds_no_outliers, contrast = c("condition", "ZW", "ZC"))
+res_LSM_vs_LC <- results(dds_no_outliers, contrast = c("condition", "LSM", "LC"))
+res_LW_vs_LC  <- results(dds_no_outliers, contrast = c("condition", "LW", "LC"))
+
+
+#1
+sig_ZSM_vs_ZC <- res_ZSM_vs_ZC[which(res_ZSM_vs_ZC$padj < 0.05), ]
+head(sig_ZSM_vs_ZC)
+#2
+sig_ZW_vs_ZC <- res_ZW_vs_ZC[which(res_ZW_vs_ZC$padj < 0.05), ]
+head(sig_ZW_vs_ZC)
+
+#3
+sig_LSM_vs_LC <- res_LSM_vs_LC[which(res_LSM_vs_LC$padj < 0.05), ]
+head(sig_LSM_vs_LC)
+#4
+sig_LW_vs_LC <- res_LW_vs_LC[which(res_LW_vs_LC$padj < 0.05), ]
+head(sig_LW_vs_LC)
