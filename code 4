@@ -37,22 +37,3 @@ dds <- DESeq(dds)
 
 
 normalized_counts <- counts(dds, normalized = TRUE)
-
-
-res_ZSM_vs_ZC <- results(dds, contrast = c("condition", "ZSM", "ZC"))
-res_ZW_vs_ZC  <- results(dds, contrast = c("condition", "ZW", "ZC"))
-res_LSM_vs_LC <- results(dds, contrast = c("condition", "LSM", "LC"))
-res_LW_vs_LC  <- results(dds, contrast = c("condition", "LW", "LC"))
-
-#1
-sig_ZSM_vs_ZC <- res_ZSM_vs_ZC[which(res_ZSM_vs_ZC$padj < 0.05), ]
-head(sig_ZSM_vs_ZC)
-#2
-sig_ZW_vs_ZC <- res_ZW_vs_ZC[which(res_ZW_vs_ZC$pvalue < 0.05), ]
-head(sig_ZW_vs_ZC)
-#3
-sig_LSM_vs_LC <- res_LSM_vs_LC[which(res_LSM_vs_LC$pvalue < 0.05), ]
-head(sig_LSM_vs_LC)
-#4
-sig_LW_vs_LC <- res_LW_vs_LC[which(res_LW_vs_LC$pvalue < 0.05), ]
-head(sig_LW_vs_LC)
