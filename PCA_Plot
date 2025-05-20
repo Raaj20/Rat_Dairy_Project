@@ -1,0 +1,34 @@
+library(DESeq2)
+library(ggplot2)
+
+# Assuming 'dds' is your DESeqDataSet object already processed with DESeq()
+
+# Perform variance stabilizing transformation (or rlog)
+vst <- varianceStabilizingTransformation(dds, blind=FALSE)
+
+# Extract PCA data with grouping info
+pcaData <- plotPCA(vst, intgroup="condition", returnData=TRUE)
+
+# Percentage of variance explained by PCs
+percentVar <- round(100 * attr(pcaData, "percentVar"), 1)
+
+# Optional: define custom colors for your conditions
+custom_colors <- c(
+  "ZC" = "#1b9e77",
+  "ZW" = "#d95f02",
+  "ZSM" = "#7570b3",
+  "LC" = "#e7298a",
+  "LW" = "#66a61e",
+  "LSM" = "#e6ab02"
+)
+
+# Create PCA plot
+ggplot(pcaData, aes(x=PC1, y=PC2, color=condition)) +
+  geom_point(size=3) +
+  scale_color_manual(values=custom_colors) +
+  labs(
+    title = "PCA Plot of miRNA Counts",
+    x = paste0("PC1: ", percentVar[1], "% variance"),
+    y = paste0("PC2: ", percentVar[2], "% variance")
+  ) +
+  theme_minimal()
