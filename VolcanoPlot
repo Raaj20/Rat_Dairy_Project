@@ -1,0 +1,61 @@
+library(ggplot2)
+library(ggrepel)
+
+plot_volcano <- function(res, title = "Volcano Plot", pval_cutoff = 0.05, lfc_cutoff = 1) {
+  res_df <- as.data.frame(res)
+  res_df$Gene <- rownames(res_df)
+  
+  # Classify significance and direction
+  res_df$color <- "Not Significant"
+  res_df$color[res_df$pvalue < pval_cutoff & res_df$log2FoldChange > lfc_cutoff] <- "Upregulated"
+  res_df$color[res_df$pvalue < pval_cutoff & res_df$log2FoldChange < -lfc_cutoff] <- "Downregulated"
+  
+  # Plot
+  ggplot(res_df, aes(x = log2FoldChange, y = -log10(pvalue))) +
+    geom_point(aes(color = color), size = 2) +
+    scale_color_manual(
+      values = c(
+        "Upregulated" = "red",
+        "Downregulated" = "green4",
+        "Not Significant" = "gray60"
+      )
+    ) +
+    geom_hline(yintercept = -log10(pval_cutoff), linetype = "dashed") +
+    geom_vline(xintercept = c(-lfc_cutoff, lfc_cutoff), linetype = "dashed") +
+    geom_text_repel(
+      data = subset(res_df, pvalue < pval_cutoff & abs(log2FoldChange) > lfc_cutoff),
+      aes(label = Gene), size = 4, max.overlaps = 15
+    ) +
+    labs(
+      title = title,
+      x = expression(Log[2]~fold~change),
+      y = expression(-Log[10]~pvalue),
+      caption = paste0("total = ", nrow(res_df), " variables")
+    ) +
+    theme_minimal() +
+    coord_fixed(ratio = 1) +
+    scale_x_continuous(limits = c(-4, 5), breaks = seq(-4, 5, 1)) +
+    scale_y_continuous(limits = c(0, 4), breaks = seq(0, 4, 1)) +
+    theme(
+      legend.position = "bottom",
+      plot.caption = element_text(size = 10, hjust = 1)
+    )
+}
+
+
+plot_volcano(res_ZSM_vs_ZC, "ZSM vs ZC")
+plot_volcano(res_ZW_vs_ZC, "ZW vs ZC")
+plot_volcano(res_LSM_vs_LC, "LSM vs LC")
+plot_volcano(res_LW_vs_LC, "LW vs LC")
+
+# First, assign each plot to a variable
+p1 <- plot_volcano(res_ZSM_vs_ZC, "ZSM vs ZC")
+p2 <- plot_volcano(res_ZW_vs_ZC, "ZW vs ZC")
+p3 <- plot_volcano(res_LSM_vs_LC, "LSM vs LC")
+p4 <- plot_volcano(res_LW_vs_LC, "LW vs LC")
+
+# Then save each one
+ggsave("volcano_ZSM_vs_ZC.png", plot = p1, width = 6, height = 6, dpi = 300)
+ggsave("volcano_ZW_vs_ZC.png",  plot = p2, width = 6, height = 6, dpi = 300)
+ggsave("volcano_LSM_vs_LC.png", plot = p3, width = 6, height = 6, dpi = 300)
+ggsave("volcano_LW_vs_LC.png",  plot = p4, width = 6, height = 6, dpi = 300)
