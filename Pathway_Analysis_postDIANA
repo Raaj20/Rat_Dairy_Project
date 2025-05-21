@@ -1,0 +1,27 @@
+library(tidyverse)
+
+# Read the TSV file
+data <- read_tsv("microT_LWvsLC.tsv")
+
+# Write as CSV
+write_csv(data, "microT_LWvsLC.csv")
+
+library(tidyverse)
+
+# Step 1: Read in your filtered microT file
+microT_LWvsLC <- read_tsv("microT_LWvsLC.tsv")
+
+View(microT_LWvsLC)
+
+# Step 2: Extract and clean the target Ensembl gene ID list
+panther_genes <- microT_LWvsLC %>%
+  select(gene_ensembl_id) %>%  
+  distinct() %>%               
+  arrange(gene_ensembl_id)     
+
+# Step 3: Save to a plain text file, one ID per line
+write.table(panther_genes, file = "PANTHER_LWvsLC.txt",
+            row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+# Optional: show a preview
+head(panther_genes)
