@@ -1,0 +1,72 @@
+library(DESeq2)
+library(ggplot2)
+library(dplyr)
+
+# 1. Variance Stabilizing Transformation
+vsd <- varianceStabilizingTransformation(dds, blind = FALSE)
+
+# 2. Extract PCA data
+pca_data <- plotPCA(vsd, intgroup = "condition", returnData = TRUE)
+
+# 3. Subset and label comparisons (experimental group first)
+zw_zc   <- pca_data %>% filter(condition %in% c("ZW", "ZC")) %>% mutate(Facet = "ZW vs ZDF control")
+zsm_zc  <- pca_data %>% filter(condition %in% c("ZSM", "ZC")) %>% mutate(Facet = "ZSM vs ZDF control")
+lw_lc   <- pca_data %>% filter(condition %in% c("LW", "LC")) %>% mutate(Facet = "LW vs LEAN control")
+lsm_lc  <- pca_data %>% filter(condition %in% c("LSM", "LC")) %>% mutate(Facet = "LSM vs LEAN control")
+
+# 4. Split subsets
+subset_zdf  <- bind_rows(zw_zc, zsm_zc)
+subset_lean <- bind_rows(lw_lc, lsm_lc)
+
+# 5. Custom color scheme
+custom_colors <- c(
+  "ZC" = "green", "ZSM" = "skyblue", "ZW" = "darkorange",
+  "LC" = "green", "LSM" = "skyblue", "LW" = "darkorange"
+)
+
+# 6. Percent variance
+percentVar <- round(100 * attr(pca_data, "percentVar"))
+
+# 7. ZDF Plot
+p_zdf <- ggplot(subset_zdf, aes(x = PC1, y = PC2, color = condition)) +
+  geom_point(size = 5) +
+  facet_wrap(~Facet, scales = "fixed", nrow = 1) +
+  scale_color_manual(values = custom_colors) +
+  labs(
+    title = "ZDF PCA: EV miRNA Expression",
+    x = paste0("PC1: ", percentVar[1], "% variance"),
+    y = paste0("PC2: ", percentVar[2], "% variance")
+  ) +
+  theme_minimal() +
+  coord_fixed() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold"),
+    legend.position = "bottom"
+  )
+
+# 8. LEAN Plot
+p_lean <- ggplot(subset_lean, aes(x = PC1, y = PC2, color = condition)) +
+  geom_point(size = 5) +
+  facet_wrap(~Facet, scales = "fixed", nrow = 1) +  # keep side-by-side
+  scale_color_manual(values = custom_colors) +
+  labs(
+    title = "LEAN PCA: EV miRNA Expression",
+    x = paste0("PC1: ", percentVar[1], "% variance"),
+    y = paste0("PC2: ", percentVar[2], "% variance")
+  ) +
+  theme_minimal() +
+  theme(
+    strip.text = element_text(size = 12, face = "bold"),
+    legend.position = "bottom",
+    panel.spacing = unit(1, "lines"),
+    aspect.ratio = 1  )
+
+
+# 9. Display
+print(p_zdf)
+print(p_lean)
+
+
+# 10. Save (optional)
+ggsave("ZDF_PCA_plot.png", p_zdf, path = "C:/Users/viraa/Rat Dairy R/Rat_Dairy_Code_Round2", width = 10, height = 4, dpi = 300)
+ggsave("LEAN_PCA_plot.png", p_lean, path = "C:/Users/viraa/Rat Dairy R/Rat_Dairy_Code_Round2", width = 8, height = 4, dpi = 300)
