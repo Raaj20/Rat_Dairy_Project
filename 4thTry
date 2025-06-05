@@ -1,4 +1,6 @@
- grep "Rattus norvegicus" mature.fa -A 1 | grep -v "\--" | sed 's/U/T/g' > only_rat_mirna_DNA.fa
+Convert U to T
+
+grep "Rattus norvegicus" mature.fa -A 1 | grep -v "\--" | sed 's/U/T/g' > only_rat_mirna_DNA.fa
 bowtie-build only_rat_mirna_DNA.fa mature
 
 
