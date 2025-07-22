@@ -1,5 +1,7 @@
 #!/bin/bash
 
+Had to redo the analysis becuase it was initally aligning to the U mirbase but now aligning to the T mirbase
+
 # --- Set directories ---
 OUTPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis/trimmedreads"
 INDEX="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/database/only_Ts_rno"
