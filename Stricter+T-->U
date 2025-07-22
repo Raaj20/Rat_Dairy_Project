@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # --- Set directories ---
-OUTPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis/trimmedforstrictu-t"
-INDEX="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/Udatabase/mature_ratU"
+OUTPUTDIR="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/data_analysis/trimmedreads"
+INDEX="/Users/viraajv/Documents/Rat_Dairy_Project_RCode/1_2_69210_Lane1_HVY2T_2688/database/only_Ts_rno"
 COUNTDIR="$OUTPUTDIR/maturemiRNAcounts"
 
 # --- Create output folder for counts ---
